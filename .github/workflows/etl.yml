@@ -1,41 +1,39 @@
 name: Run ETL Pipeline
 
 on:
-  workflow_dispatch:    # allows manual trigger
+  workflow_dispatch:        # allow manual runs
   schedule:
-    - cron: "0 6 * * *" # runs every day at 6 AM UTC
+    - cron: "0 6 * * *"     # daily at 06:00 UTC
 
 jobs:
   etl:
     runs-on: ubuntu-latest
+    env:
+      PGHOST:     ${{ secrets.PGHOST }}
+      PGPORT:     ${{ secrets.PGPORT }}
+      PGDATABASE: ${{ secrets.PGDATABASE }}
+      PGUSER:     ${{ secrets.PGUSER }}
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run ETL
-        env:
-          PGHOST: ${{ secrets.PGHOST }}
-          PGPORT: ${{ secrets.PGPORT }}
-          PGDATABASE: ${{ secrets.PGDATABASE }}
-          PGUSER: ${{ secrets.PGUSER }}
-          PGPASSWORD: ${{ secrets.PGPASSWORD }}
-          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+      - name: Run ETL scripts
         run: |
-          source .venv/bin/activate
-          python etl/bls_ingest.py
-          python etl/bls_ces_ingest.py
+          python etl/bls_ingest.py 2000 2100
+          python etl/bls_ces_ingest.py 2000 2100
           python etl/stocks_ingest.py
           python etl/load_to_db.py
