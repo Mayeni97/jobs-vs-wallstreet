@@ -1,0 +1,41 @@
+name: Run ETL Pipeline
+
+on:
+  workflow_dispatch:    # allows manual trigger
+  schedule:
+    - cron: "0 6 * * *" # runs every day at 6 AM UTC
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run ETL
+        env:
+          PGHOST: ${{ secrets.PGHOST }}
+          PGPORT: ${{ secrets.PGPORT }}
+          PGDATABASE: ${{ secrets.PGDATABASE }}
+          PGUSER: ${{ secrets.PGUSER }}
+          PGPASSWORD: ${{ secrets.PGPASSWORD }}
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+        run: |
+          source .venv/bin/activate
+          python etl/bls_ingest.py
+          python etl/bls_ces_ingest.py
+          python etl/stocks_ingest.py
+          python etl/load_to_db.py
