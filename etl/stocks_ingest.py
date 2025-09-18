@@ -1,28 +1,47 @@
-import yfinance as yf
+from datetime import date
 import pandas as pd
+import yfinance as yf
 
-TICKERS = ["^GSPC","XLY","XLP","XLE","XLF","XLV","XLI","XLB","XLK","XLU","XLRE"]
-
-def fetch_monthly_prices(start="2000-01-01"):
-    # auto_adjust=False so we have an 'Adj Close' column
-    data = yf.download(TICKERS, start=start, progress=False, auto_adjust=False)
-
-    # Grab just the adjusted close; handles MultiIndex columns when multiple tickers
-    adj = data["Adj Close"]
-
-    # Month-end resample
-    monthly = adj.resample("ME").last()
-
-    # Wide -> long
-    df = monthly.reset_index().melt(id_vars=["Date"], var_name="ticker", value_name="adj_close")
-    df = df.rename(columns={"Date": "period_date"}).sort_values(["ticker","period_date"]).reset_index(drop=True)
-
-    # Monthly return per ticker (no forward fill)
-    df["monthly_return"] = df.groupby("ticker")["adj_close"].pct_change(fill_method=None)
-    return df
+# S&P 500 + sector ETFs (add/remove as needed)
+TICKERS = [
+    "^GSPC", "XLY", "XLP", "XLE", "XLF",
+    "XLV", "XLI", "XLB", "XLK", "XLU", "XLRE", "XLC"
+]
 
 def main():
-    df = fetch_monthly_prices()
+    print(f"Fetching {len(TICKERS)} tickers...")
+    data = yf.download(
+        TICKERS,
+        start="1999-01-01",
+        end=str(date.today()),
+        auto_adjust=True,
+        progress=False,
+    )
+
+    # yfinance returns MultiIndex columns for multiple tickers
+    if isinstance(data.columns, pd.MultiIndex):
+        px = data["Close"].copy()
+    else:
+        # Single ticker fallback; rename to a consistent column
+        px = data.rename(columns={"Close": TICKERS[0]})
+
+    # Month-end buckets, last price in each month
+    monthly = px.resample("ME").last()
+
+    # Long format
+    df = monthly.stack().reset_index()
+    df.columns = ["period_date", "ticker", "adj_close"]
+
+    # Compute monthly returns per ticker
+    df["monthly_return"] = df.groupby("ticker")["adj_close"].pct_change()
+
+    # Drop rows without prices (e.g., pre-inception)
+    before = len(df)
+    df = df.dropna(subset=["adj_close"])
+    dropped = before - len(df)
+    if dropped:
+        print(f"Dropped {dropped} rows with null adj_close (pre-inception)")
+
     df.to_csv("equities_monthly.csv", index=False)
     print("Saved equities_monthly.csv")
 

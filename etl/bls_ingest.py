@@ -1,53 +1,35 @@
 import os
-import requests
-import pandas as pd
+import sys
 import datetime as dt
+import pandas as pd
+from common import bls_fetch
 
-# 🔑 You'll need a free BLS API key later:
-# https://www.bls.gov/developers/
-BLS_API_KEY = os.getenv("BLS_API_KEY")
+DEFAULT_START = int(os.getenv("BLS_START_YEAR", "2000"))
 
-# Series IDs:
-# LNS14000000 = Unemployment Rate (U-3, monthly, seasonally adjusted)
-HEADLINE_SERIES = ["LNS14000000"]
-
-def fetch_bls(series_ids, start_year=2000, end_year=None):
-    """Fetch data from BLS API and return as DataFrame."""
-    if end_year is None:
-        end_year = dt.date.today().year
-
-    payload = {
-        "seriesid": series_ids,
-        "startyear": str(start_year),
-        "endyear": str(end_year),
-        "registrationkey": BLS_API_KEY,
-    }
-    r = requests.post("https://api.bls.gov/publicAPI/v2/timeseries/data/",
-                      json=payload, timeout=30)
-    r.raise_for_status()
-    j = r.json()
-
-    rows = []
-    for series in j["Results"]["series"]:
-        sid = series["seriesID"]
-        for item in series["data"]:
-            year = int(item["year"])
-            month = int(item["period"][1:])  # "M01" → 1
-            value = float(item["value"])
-            rows.append({
-                "series_id": sid,
-                "period_date": dt.date(year, month, 1),
-                "value": value,
-            })
-
-    df = pd.DataFrame(rows)
-    return df.sort_values("period_date")
+HEADLINE_SERIES = ["LNS14000000"]  # U-3 unemployment rate, SA, monthly
 
 def main():
-    print("Fetching BLS unemployment data...")
-    df = fetch_bls(HEADLINE_SERIES, start_year=2000)
+    # Allow CLI override: python etl/bls_ingest.py 2000 2025
+    start_year = int(sys.argv[1]) if len(sys.argv) >= 2 else DEFAULT_START
+    end_year = int(sys.argv[2]) if len(sys.argv) >= 3 else dt.date.today().year
+
+    print(f"Fetching BLS headline unemployment {start_year} → {end_year} ...")
+    series = bls_fetch(HEADLINE_SERIES, start_year=start_year, end_year=end_year)
+    rows = []
+    for s in series:
+        for item in s["data"]:
+            y = int(item["year"]); m = int(item["period"][1:])
+            rows.append({
+                "period_date": dt.date(y, m, 1),
+                "unemployment_rate": pd.to_numeric(item["value"], errors="coerce"),
+            })
+    df = (pd.DataFrame(rows)
+          .dropna()
+          .drop_duplicates()
+          .sort_values("period_date")
+          .reset_index(drop=True))
     df.to_csv("bls_unemployment.csv", index=False)
-    print("Saved bls_unemployment.csv")
+    print(f"Saved bls_unemployment.csv ({df['period_date'].min()} → {df['period_date'].max()})")
 
 if __name__ == "__main__":
     main()

@@ -1,14 +1,11 @@
-# etl/bls_ingest.py
 import os
+import sys
 import datetime as dt
-import requests
 import pandas as pd
+from common import bls_fetch
 
-BLS_API_KEY = os.getenv("BLS_API_KEY")  # optional
+DEFAULT_START = int(os.getenv("BLS_START_YEAR", "2000"))
 
-HEADLINE_SERIES = ["LNS14000000"]  # U-3 unemployment rate, SA, monthly
-
-# CES supersectors — All employees, thousands, SA
 CES_SUPERSECTORS = {
     "CES0500000001": "Total Private",
     "CES1000000001": "Mining and Logging",
@@ -27,52 +24,31 @@ CES_SUPERSECTORS = {
     "CES5000000001": "Information",
 }
 
-def _bls_post(series_ids, start_year=2000, end_year=None):
-    if end_year is None:
-        end_year = dt.date.today().year
-    payload = {"seriesid": series_ids, "startyear": str(start_year), "endyear": str(end_year)}
-    if BLS_API_KEY:
-        payload["registrationkey"] = BLS_API_KEY
-    r = requests.post("https://api.bls.gov/publicAPI/v2/timeseries/data/",
-                      json=payload, timeout=60)
-    r.raise_for_status()
-    j = r.json()
-    if j.get("status") != "REQUEST_SUCCEEDED":
-        raise RuntimeError(f"BLS API error: {j}")
-    return j["Results"]["series"]
+def main():
+    # Allow CLI override: python etl/bls_ces_ingest.py 2000 2025
+    start_year = int(sys.argv[1]) if len(sys.argv) >= 2 else DEFAULT_START
+    end_year = int(sys.argv[2]) if len(sys.argv) >= 3 else dt.date.today().year
 
-def fetch_unemployment():
-    series = _bls_post(HEADLINE_SERIES)
-    rows = []
-    for s in series:
-        for item in s["data"]:
-            y, m = int(item["year"]), int(item["period"][1:])
-            rows.append({"period_date": dt.date(y, m, 1),
-                         "unemployment_rate": float(item["value"])})
-    return pd.DataFrame(rows).sort_values("period_date").reset_index(drop=True)
-
-def fetch_ces_supersectors():
-    ids = list(CES_SUPERSECTORS.keys())
-    series = _bls_post(ids)
+    print(f"Fetching BLS CES supersectors {start_year} → {end_year} ...")
+    series = bls_fetch(list(CES_SUPERSECTORS.keys()), start_year=start_year, end_year=end_year)
     recs = []
     for s in series:
-        code = s["seriesID"]
-        name = CES_SUPERSECTORS.get(code, code)
+        code = s["seriesID"]; name = CES_SUPERSECTORS.get(code, code)
         for item in s["data"]:
-            y, m = int(item["year"]), int(item["period"][1:])
+            y = int(item["year"]); m = int(item["period"][1:])
             recs.append({
                 "period_date": dt.date(y, m, 1),
                 "sector_code": code,
                 "sector_name": name,
-                "employment_thousands": float(item["value"]),
+                "employment_thousands": pd.to_numeric(item["value"], errors="coerce"),
             })
-    return pd.DataFrame(recs).sort_values(["sector_name","period_date"]).reset_index(drop=True)
-
-def main():
-    print("Fetching BLS unemployment + CES…")
-    fetch_unemployment().to_csv("bls_unemployment.csv", index=False)
-    fetch_ces_supersectors().to_csv("bls_ces_supersectors.csv", index=False)
-    print("✅ Saved bls_unemployment.csv and bls_ces_supersectors.csv")
+    df = (pd.DataFrame(recs)
+          .dropna()
+          .drop_duplicates()
+          .sort_values(["sector_name", "period_date"])
+          .reset_index(drop=True))
+    df.to_csv("bls_ces_supersectors.csv", index=False)
+    print(f"Saved bls_ces_supersectors.csv ({df['period_date'].min()} → {df['period_date'].max()})")
 
 if __name__ == "__main__":
     main()
