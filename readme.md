@@ -20,7 +20,6 @@ It combines **data engineering + analytics** to deliver insights into how labor 
 ## Project Structure
 jobs-vs-wallstreet/
 - etl/           # Scripts to fetch, clean, and load data
-- sql/           # Database schema and migrations
 - dashboard/     # Streamlit app (interactive dashboard)
 - ntests/         # Unit tests for transformations
 - README.md      # Project overview
