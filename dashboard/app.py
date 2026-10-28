@@ -508,38 +508,66 @@ st.caption(
     "Seasonally adjusted LAUS unemployment rate for the latest month in the selected window."
 )
 if ok_states:
-    latest_state_month = state_unemployment["ym"].max()
+    state_months = sorted(state_unemployment["ym"].unique(), reverse=True)
+    month_labels = [pd.Timestamp(month).strftime("%B %Y") for month in state_months]
+    control_col, state_col = st.columns(2)
+    selected_month_label = control_col.selectbox(
+        "Map month",
+        month_labels,
+        help="Move through the available monthly LAUS releases.",
+    )
+    selected_month = pd.Timestamp(
+        state_months[month_labels.index(selected_month_label)]
+    ).date()
+    state_options = (
+        state_unemployment[["state_code", "state_name"]]
+        .drop_duplicates()
+        .sort_values("state_name")
+    )
+    state_labels = {
+        row.state_code: f"{row.state_name} ({row.state_code})"
+        for row in state_options.itertuples()
+    }
+    selected_state = state_col.selectbox(
+        "State trend",
+        state_options["state_code"].tolist(),
+        format_func=lambda code: state_labels[code],
+        help="Choose a state to inspect below the map.",
+    )
     latest_states = state_unemployment[
-        state_unemployment["ym"] == latest_state_month
+        state_unemployment["ym"] == selected_month
     ].copy()
-    map_col, table_col = st.columns([2, 1])
     state_map = px.choropleth(
         latest_states,
         locations="state_code",
         locationmode="USA-states",
         color="unemployment_rate",
         scope="usa",
-        color_continuous_scale="Blues",
+        color_continuous_scale="YlOrRd",
+        range_color=(
+            state_unemployment["unemployment_rate"].min(),
+            state_unemployment["unemployment_rate"].max(),
+        ),
         hover_name="state_name",
         hover_data={"state_code": False, "unemployment_rate": ":.1f"},
         labels={"unemployment_rate": "Unemployment rate (%)"},
-        title=f"State unemployment — {latest_state_month:%B %Y}",
+        title=f"State unemployment — {selected_month:%B %Y}",
     )
     state_map.update_layout(height=470, margin={"t": 60, "b": 0})
-    map_col.plotly_chart(state_map, width="stretch")
-    table_col.dataframe(
-        latest_states[["state_name", "unemployment_rate"]]
-        .sort_values("unemployment_rate", ascending=False)
-        .rename(
-            columns={
-                "state_name": "State",
-                "unemployment_rate": "Rate (%)",
-            }
-        )
-        .assign(**{"Rate (%)": lambda frame: frame["Rate (%)"].round(1)}),
-        width="stretch",
-        hide_index=True,
+    st.plotly_chart(state_map, width="stretch")
+    selected_state_history = state_unemployment[
+        state_unemployment["state_code"] == selected_state
+    ]
+    state_trend = px.line(
+        selected_state_history,
+        x="ym",
+        y="unemployment_rate",
+        markers=True,
+        labels={"ym": "Month", "unemployment_rate": "Unemployment rate (%)"},
+        title=f"{state_labels[selected_state]} unemployment trend",
     )
+    state_trend.update_layout(height=330, hovermode="x unified")
+    st.plotly_chart(state_trend, width="stretch")
 
 
 def linear_forecast(series: pd.DataFrame, periods: int = 12) -> pd.DataFrame:
