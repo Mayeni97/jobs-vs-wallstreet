@@ -2,8 +2,12 @@ name: nightly-refresh
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # 06:00 UTC daily
+    - cron: "0 14 * * *"  # 14:00 UTC, after the usual BLS release window
   workflow_dispatch:       # allow manual run from Actions tab
+
+concurrency:
+  group: supabase-refresh
+  cancel-in-progress: false
 
 jobs:
   refresh:
