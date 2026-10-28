@@ -13,7 +13,11 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PGHOST:     ${{ secrets.PGHOST }}
+      PGPORT:     ${{ secrets.PGPORT }}
+      PGDATABASE: ${{ secrets.PGDATABASE }}
+      PGUSER:     ${{ secrets.PGUSER }}
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
       BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
       BLS_START_YEAR: "2000"
       PYTHONUNBUFFERED: "1"
