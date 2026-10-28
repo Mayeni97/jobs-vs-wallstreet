@@ -1,82 +1,91 @@
-# Jobs vs Wall Street 
+# Jobs vs Wall Street
 
-This project tracks **U.S. unemployment and sector employment data** (via BLS)  
-and compares it with **stock market performance** (S&P 500 + sector ETFs).  
+Jobs vs Wall Street is a data pipeline and interactive Streamlit dashboard that
+explores how U.S. labor-market conditions move alongside the stock market.
+It combines official Bureau of Labor Statistics data with monthly S&P 500 and
+sector ETF data, stores the results in Supabase PostgreSQL, and presents the
+results through an interactive dashboard.
 
-It combines **data engineering + analytics** to deliver insights into how labor market changes relate to financial markets.
+## What it does
 
----
+- Tracks the national unemployment rate from BLS.
+- Tracks employment by major industry from the BLS Current Employment Statistics survey.
+- Maps seasonally adjusted unemployment for all 50 states plus Washington, D.C. using BLS LAUS.
+- Compares unemployment and employment trends with the S&P 500 and sector ETFs.
+- Provides date-window filters, ticker descriptions, interactive charts, and state trends.
+- Includes an exploratory 12-month linear unemployment trend projection.
+- Refreshes data through GitHub Actions and loads it into Supabase.
 
-## Features
-- Automated **ETL pipeline** to fetch fresh data:
-  - **Unemployment / Employment** from BLS API  
-  - **Stock data** from Yahoo Finance (`yfinance`)  
-- **PostgreSQL database** to store historical & updated data  
-- **GitHub Actions** for CI/CD & scheduled refreshes  
-- **Streamlit dashboard** for live interactive visualization  
+The forecast is intentionally labeled experimental. It is a simple trend projection,
+not a validated economic forecast or investment recommendation. Correlation in the
+dashboard is descriptive and does not prove causation.
 
----
+## Architecture
 
-## Project Structure
-jobs-vs-wallstreet/
-- etl/           # Scripts to fetch, clean, and load data
-- dashboard/     # Streamlit app (interactive dashboard)
-- ntests/         # Unit tests for transformations
-- README.md      # Project overview
-- requirements.txt # Python dependencies
-- .github/workflows/ci.yml # CI/CD pipeline
+```text
+BLS API + Yahoo Finance
+          │
+          ▼
+      etl/*.py  ──► CSV snapshots ──► Supabase PostgreSQL
+                                           │
+                                           ▼
+                                  dashboard/app.py
+                                  Streamlit dashboard
+```
 
----
+## Project structure
 
-##  Goals
-- Show correlations between **unemployment/employment** and **stock performance**  
-- Provide **up-to-date sector-level insights**  
-- Demonstrate skills in:
-  - Data Engineering (ETL + pipelines)
-  - Data Analytics (visualizations, metrics)
-  - DevOps (GitHub Actions CI/CD)
-  - Cloud Deployment (Streamlit Cloud + Postgres)
-
----
-
-## Tech Stack
-- **Python** (Pandas, Requests, YFinance, SQLAlchemy, Streamlit, Plotly)
-- **PostgreSQL** (Supabase/Neon for cloud DB)
-- **GitHub Actions** (CI/CD + scheduled jobs)
-- **Streamlit Cloud** (dashboard hosting)
-
-The dashboard includes state unemployment mapping from BLS LAUS and an
-experimental 12-month unemployment trend projection.
+```text
+dashboard/app.py              Streamlit dashboard
+etl/common.py                 BLS client and database connection helpers
+etl/bls_ingest.py             National unemployment ETL
+etl/bls_ces_ingest.py         Industry employment ETL
+etl/laus_ingest.py            State unemployment ETL
+etl/stocks_ingest.py          S&P 500 and sector ETF ETL
+etl/load_to_db.py             CSV-to-Supabase loader
+supabase/schema.sql           Database tables and indexes
+tests/test.py                 Data integrity checks
+.github/workflows/ci.yml      Lint, format, import, and data checks
+.github/workflows/refresh.yml Scheduled production refresh
+```
 
 ## Supabase setup
 
-The project uses Supabase as its PostgreSQL database. Create a Supabase project,
-open the SQL Editor, and run [`supabase/schema.sql`](supabase/schema.sql).
+1. Create a Supabase project.
+2. Open the Supabase SQL Editor and run [`supabase/schema.sql`](supabase/schema.sql).
+3. Copy a PostgreSQL URI from Supabase **Connect**. Use a URI beginning with
+   `postgresql://`, not the Supabase project URL beginning with `https://`.
 
-Copy the Supabase PostgreSQL connection string from **Project Settings → Database**.
-Use the pooled connection string when deploying the dashboard, and save it as
-`DATABASE_URL`.
+For local development, copy [`.env.example`](.env.example) to `.env` and fill in
+either `DATABASE_URL` or all five `PG*` values. Never commit `.env`.
 
-For local runs, create a `.env` file in the repository root:
-
-```env
-DATABASE_URL=postgresql://postgres.<project-ref>:<password>@<pooler-host>:6543/postgres?sslmode=require
-```
-
-Then load the generated CSV files into Supabase with:
+Load the generated CSV snapshots into Supabase with:
 
 ```bash
 python etl/load_to_db.py
 ```
 
-For Streamlit Cloud, add the same value under **App settings → Secrets** as:
+The loader is safe to run repeatedly because it upserts by each table's primary key.
 
-```toml
-DATABASE_URL = "postgresql://..."
+## Run locally
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run dashboard/app.py
 ```
 
-For GitHub Actions, add these repository secrets so the ETL workflows can
-refresh Supabase:
+Open `http://localhost:8501`.
+
+## Automated refresh
+
+The `refresh` workflow runs daily at 14:00 UTC, after the typical BLS release
+window. It fetches national unemployment, industry employment, state unemployment,
+and stock data, loads Supabase, and runs data validation. GitHub Actions prevents
+overlapping refreshes.
+
+Add these repository secrets for GitHub Actions:
 
 ```text
 PGHOST
@@ -86,44 +95,28 @@ PGUSER
 PGPASSWORD
 ```
 
-`BLS_API_KEY` is optional, but recommended for larger historical BLS requests.
-The workflows use the `PG*` secrets directly; `DATABASE_URL` is not required
-for GitHub Actions.
+`BLS_API_KEY` is optional but recommended for larger historical BLS requests.
+The workflow also supports manual runs from the GitHub Actions page.
 
-## Deploy the dashboard
+## Deploy to Streamlit Cloud
 
-1. Open [Streamlit Community Cloud](https://share.streamlit.io/) and sign in with GitHub.
-2. Create an app from this repository and select `dashboard/app.py` as the main file.
-3. In the app settings, add the Supabase connection string as a secret:
+1. Create an app from this GitHub repository.
+2. Set the main file to `dashboard/app.py`.
+3. Add `DATABASE_URL` or the five `PG*` values under Streamlit app secrets.
+4. Deploy. Future pushes to `master` will trigger redeployment.
 
-```toml
-DATABASE_URL = "postgresql://..."
+## Quality checks
+
+```bash
+ruff check .
+black --check .
+python -m compileall -q .
+python tests/test.py
 ```
 
-4. Deploy the app. Future pushes to `master` will trigger a redeploy.
+## Future improvements
 
-Streamlit Cloud can also use the five `PG*` secrets instead of `DATABASE_URL`.
-
-The repository includes [`.env.example`](.env.example) as a safe local template.
-Never commit `.env` or paste database credentials into source files.
-
-## Operations checklist
-
-- Confirm the GitHub Actions `refresh` workflow succeeds after each schedule.
-- Review the dashboard's latest-data dates after a refresh.
-- Keep the database credentials current when the Supabase password changes.
-- Run the workflow manually after a BLS revision or provider outage.
-
----
-
-## Dashboard (Planned)
-- Line charts: unemployment vs S&P 500  
-- Sector breakdowns: employment vs sector ETFs  
-- Correlation metrics: employment growth vs stock returns  
-- Filters for sector & ticker  
-
----
-
-## Future Improvements
-- Add **sentiment analysis** from financial news headlines
-- Add validated forecasting models and forecast uncertainty intervals
+- Add financial-news sentiment analysis.
+- Evaluate forecasting models against held-out historical data.
+- Add forecast uncertainty intervals.
+- Add ETL run history and failure notifications.
