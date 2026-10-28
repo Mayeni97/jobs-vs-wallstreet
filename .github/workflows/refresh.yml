@@ -28,10 +28,10 @@ jobs:
           pip install -r requirements.txt
 
       - name: Fetch BLS headline unemployment
-        run: python etl/bls_ingest.py 2000 2100
+        run: python etl/bls_ingest.py
 
       - name: Fetch BLS CES supersectors
-        run: python etl/bls_ces_ingest.py 2000 2100
+        run: python etl/bls_ces_ingest.py
 
       - name: Fetch equities/ETFs
         run: python etl/stocks_ingest.py
