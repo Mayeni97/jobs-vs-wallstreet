@@ -38,3 +38,6 @@ jobs:
 
       - name: Load all CSVs into Postgres
         run: python etl/load_to_db.py
+
+      - name: Validate refreshed data
+        run: python tests/test.py

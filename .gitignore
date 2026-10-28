@@ -28,6 +28,8 @@ Thumbs.db
 
 # Streamlit cache
 .streamlit/
+!.streamlit/
+!.streamlit/config.toml
 
 # Build artifacts
 dist/

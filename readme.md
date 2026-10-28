@@ -75,6 +75,18 @@ DATABASE_URL = "postgresql://..."
 For GitHub Actions, add a repository secret named `DATABASE_URL` so the ETL
 workflows can refresh Supabase.
 
+## Deploy the dashboard
+
+1. Open [Streamlit Community Cloud](https://share.streamlit.io/) and sign in with GitHub.
+2. Create an app from this repository and select `dashboard/app.py` as the main file.
+3. In the app settings, add the Supabase connection string as a secret:
+
+```toml
+DATABASE_URL = "postgresql://..."
+```
+
+4. Deploy the app. Future pushes to `master` will trigger a redeploy.
+
 ---
 
 ## Dashboard (Planned)
