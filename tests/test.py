@@ -36,10 +36,24 @@ ok = (
 print("dates sorted per ticker:", ok)
 assert ok, "dates must be sorted per ticker"
 
+unemployment_path = Path("bls_unemployment.csv")
+if unemployment_path.exists():
+    unemployment = pd.read_csv(unemployment_path, parse_dates=["period_date"])
+    assert not unemployment.empty, "unemployment data must contain rows"
+    assert unemployment["period_date"].is_monotonic_increasing
+    assert unemployment["unemployment_rate"].between(0, 100).all()
+
+ces_path = Path("bls_ces_supersectors.csv")
+if ces_path.exists():
+    ces = pd.read_csv(ces_path, parse_dates=["period_date"])
+    assert not ces.empty, "CES data must contain rows"
+    assert ces["employment_thousands"].ge(0).all()
+
 laus_path = Path("laus_state_unemployment.csv")
 if laus_path.exists():
     laus = pd.read_csv(laus_path, parse_dates=["period_date"])
     assert len(laus["state_code"].unique()) == 51, "LAUS must contain 50 states plus DC"
     assert not laus.duplicated(subset=["state_code", "period_date"]).any()
+    assert laus["unemployment_rate"].between(0, 100).all()
 
 print(s[s.ticker == "^GSPC"].head(8))

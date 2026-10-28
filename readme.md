@@ -104,6 +104,16 @@ DATABASE_URL = "postgresql://..."
 
 Streamlit Cloud can also use the five `PG*` secrets instead of `DATABASE_URL`.
 
+The repository includes [`.env.example`](.env.example) as a safe local template.
+Never commit `.env` or paste database credentials into source files.
+
+## Operations checklist
+
+- Confirm the GitHub Actions `refresh` workflow succeeds after each schedule.
+- Review the dashboard's latest-data dates after a refresh.
+- Keep the database credentials current when the Supabase password changes.
+- Run the workflow manually after a BLS revision or provider outage.
+
 ---
 
 ## Dashboard (Planned)

@@ -12,6 +12,9 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
     env:
       PGHOST:     ${{ secrets.PGHOST }}
       PGPORT:     ${{ secrets.PGPORT }}
