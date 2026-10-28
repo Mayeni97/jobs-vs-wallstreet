@@ -49,12 +49,25 @@ def load_ces(engine):
     upsert(engine, "employment_sector", df, ["period_date", "sector_code"])
 
 
+def load_laus(engine):
+    path = "laus_state_unemployment.csv"
+    if not os.path.exists(path):
+        print("laus_state_unemployment.csv not found; skipping")
+        return
+    df = pd.read_csv(path, parse_dates=["period_date"])
+    df = df[["period_date", "state_code", "state_name", "unemployment_rate"]]
+    df["unemployment_rate"] = pd.to_numeric(df["unemployment_rate"], errors="coerce")
+    df = df.dropna(subset=["unemployment_rate"])
+    upsert(engine, "laus_state_unemployment", df, ["period_date", "state_code"])
+
+
 def main():
     engine = get_engine()
     assert_connect(engine)
     load_equities(engine)
     load_unemployment(engine)
     load_ces(engine)
+    load_laus(engine)
     print("Done")
 
 

@@ -41,6 +41,9 @@ jobs:
       - name: Fetch BLS CES supersectors
         run: python etl/bls_ces_ingest.py
 
+      - name: Fetch BLS state unemployment
+        run: python etl/laus_ingest.py
+
       - name: Fetch equities/ETFs
         run: python etl/stocks_ingest.py
 

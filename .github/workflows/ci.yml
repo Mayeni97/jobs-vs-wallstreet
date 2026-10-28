@@ -31,7 +31,7 @@ jobs:
         run: |
           python - <<'PY'
           import importlib
-          for m in ["etl.common", "etl.bls_ingest", "etl.bls_ces_ingest", "etl.stocks_ingest"]:
+          for m in ["etl.common", "etl.bls_ingest", "etl.bls_ces_ingest", "etl.laus_ingest", "etl.stocks_ingest"]:
               importlib.import_module(m)
           print("Imports OK")
           PY

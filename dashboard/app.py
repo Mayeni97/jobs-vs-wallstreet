@@ -3,7 +3,9 @@ import os
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
@@ -149,6 +151,7 @@ meta = q("""
       (select max(date_trunc('month', period_date)) from unemployment_headline) as un_max,
       (select min(date_trunc('month', period_date)) from employment_sector)  as ces_min,
       (select max(date_trunc('month', period_date)) from employment_sector)  as ces_max
+      ,(select max(date_trunc('month', period_date)) from laus_state_unemployment) as laus_max
 """)
 eq_min = pd.to_datetime(meta.loc[0, "eq_min"]).date()
 eq_max = pd.to_datetime(meta.loc[0, "eq_max"]).date()
@@ -156,6 +159,7 @@ un_min = pd.to_datetime(meta.loc[0, "un_min"]).date()
 un_max = pd.to_datetime(meta.loc[0, "un_max"]).date()
 ces_min = pd.to_datetime(meta.loc[0, "ces_min"]).date()
 ces_max = pd.to_datetime(meta.loc[0, "ces_max"]).date()
+laus_max = pd.to_datetime(meta.loc[0, "laus_max"]).date()
 
 start_default = max(eq_min, un_min, ces_min)
 end_default = min(eq_max, un_max, ces_max)
@@ -240,6 +244,7 @@ with st.sidebar:
     st.write(f"Stocks: {eq_max}")
     st.write(f"Unemployment: {un_max}")
     st.write(f"Employment: {ces_max}")
+    st.write(f"State unemployment: {laus_max}")
     if end_default < pd.Timestamp.today().date():
         st.warning(
             "Some source data may be delayed; the dashboard ends at the latest loaded month."
@@ -295,6 +300,19 @@ sector_jobs = q(
     params,
 )
 
+state_unemployment = q(
+    """
+    select date_trunc('month', period_date)::date as ym,
+           state_code,
+           state_name,
+           unemployment_rate
+    from laus_state_unemployment
+    where period_date between :start and :end
+    order by 1, 2
+""",
+    params,
+)
+
 
 def nonempty(df, name):
     if df.empty:
@@ -306,6 +324,7 @@ def nonempty(df, name):
 ok_u = nonempty(unemp, "unemployment")
 ok_e = nonempty(equities, "equities")
 ok_s = nonempty(sector_jobs, "sector employment")
+ok_states = nonempty(state_unemployment, "state unemployment")
 
 
 # ---------------- KPIs ----------------
@@ -434,7 +453,7 @@ if ok_u and ok_e:
             fig.update_layout(
                 height=430, hovermode="x unified", margin={"t": 60, "b": 20}
             )
-            col1.plotly_chart(fig, use_container_width=True)
+            col1.plotly_chart(fig, width="stretch")
         else:
             col1.info("No overlapping months for unemployment and S&P.")
     else:
@@ -477,11 +496,96 @@ if ok_s and ok_e:
             fig2.update_layout(
                 height=430, hovermode="x unified", margin={"t": 60, "b": 20}
             )
-            col2.plotly_chart(fig2, use_container_width=True)
+            col2.plotly_chart(fig2, width="stretch")
         else:
             col2.info("No overlapping months for sector jobs and ETF.")
     else:
         col2.info(f"No {sector_etf} rows in selected window.")
+
+# ---------------- State map and exploratory forecast ----------------
+st.subheader("State unemployment map")
+st.caption(
+    "Seasonally adjusted LAUS unemployment rate for the latest month in the selected window."
+)
+if ok_states:
+    latest_state_month = state_unemployment["ym"].max()
+    latest_states = state_unemployment[
+        state_unemployment["ym"] == latest_state_month
+    ].copy()
+    map_col, table_col = st.columns([2, 1])
+    state_map = px.choropleth(
+        latest_states,
+        locations="state_code",
+        locationmode="USA-states",
+        color="unemployment_rate",
+        scope="usa",
+        color_continuous_scale="Blues",
+        hover_name="state_name",
+        hover_data={"state_code": False, "unemployment_rate": ":.1f"},
+        labels={"unemployment_rate": "Unemployment rate (%)"},
+        title=f"State unemployment — {latest_state_month:%B %Y}",
+    )
+    state_map.update_layout(height=470, margin={"t": 60, "b": 0})
+    map_col.plotly_chart(state_map, width="stretch")
+    table_col.dataframe(
+        latest_states[["state_name", "unemployment_rate"]]
+        .sort_values("unemployment_rate", ascending=False)
+        .rename(
+            columns={
+                "state_name": "State",
+                "unemployment_rate": "Rate (%)",
+            }
+        )
+        .assign(**{"Rate (%)": lambda frame: frame["Rate (%)"].round(1)}),
+        width="stretch",
+        hide_index=True,
+    )
+
+
+def linear_forecast(series: pd.DataFrame, periods: int = 12) -> pd.DataFrame:
+    """Return a simple trend projection for exploration, not investment advice."""
+    clean = series.dropna().sort_values("ym").copy()
+    if len(clean) < 12:
+        return pd.DataFrame(columns=["ym", "unemployment_rate", "series"])
+    x = np.arange(len(clean), dtype=float)
+    y = clean["unemployment_rate"].to_numpy(dtype=float)
+    slope, intercept = np.polyfit(x, y, 1)
+    future_x = np.arange(len(clean), len(clean) + periods, dtype=float)
+    future_dates = pd.date_range(
+        pd.Timestamp(clean["ym"].max()) + pd.offsets.MonthBegin(1),
+        periods=periods,
+        freq="MS",
+    )
+    return pd.DataFrame(
+        {
+            "ym": future_dates,
+            "unemployment_rate": np.polyval([slope, intercept], future_x),
+            "series": "Trend projection",
+        }
+    )
+
+
+st.subheader("Experimental unemployment forecast")
+st.caption(
+    "A simple linear trend projection for exploration; it is not a validated forecast."
+)
+forecast = linear_forecast(unemp[["ym", "unemployment_rate"]])
+if not forecast.empty:
+    actual = unemp[["ym", "unemployment_rate"]].copy()
+    actual["series"] = "Observed"
+    forecast_chart = px.line(
+        pd.concat([actual, forecast]),
+        x="ym",
+        y="unemployment_rate",
+        color="series",
+        color_discrete_map={"Observed": "#1f77b4", "Trend projection": "#ff7f0e"},
+        labels={"ym": "Month", "unemployment_rate": "Unemployment rate (%)"},
+        title="National unemployment: observed history and 12-month trend projection",
+    )
+    forecast_chart.update_layout(height=420, hovermode="x unified")
+    st.plotly_chart(forecast_chart, width="stretch")
+else:
+    st.info("At least 12 months of unemployment data are needed for the projection.")
 
 # C) Correlation snapshot table (monthly)
 st.subheader("Correlation snapshot (monthly)")
@@ -521,7 +625,7 @@ if ok_u and ok_e:
     )
     for column in [f"{SPX} vs unemployment", f"{sector_etf} vs unemployment"]:
         corr_display[column] = corr_display[column].round(2)
-    st.dataframe(corr_display, use_container_width=True, hide_index=True)
+    st.dataframe(corr_display, width="stretch", hide_index=True)
 else:
     st.info("Not enough data for correlation in the selected window.")
 

@@ -45,6 +45,9 @@ jobs-vs-wallstreet/
 - **GitHub Actions** (CI/CD + scheduled jobs)
 - **Streamlit Cloud** (dashboard hosting)
 
+The dashboard includes state unemployment mapping from BLS LAUS and an
+experimental 12-month unemployment trend projection.
+
 ## Supabase setup
 
 The project uses Supabase as its PostgreSQL database. Create a Supabase project,
@@ -112,6 +115,5 @@ Streamlit Cloud can also use the five `PG*` secrets instead of `DATABASE_URL`.
 ---
 
 ## Future Improvements
-- Add **state-level unemployment (LAUS)** for geo maps  
-- Add **sentiment analysis** from financial news headlines  
-- Add **forecasting models** (ARIMA, Prophet, ML) for unemployment trends
+- Add **sentiment analysis** from financial news headlines
+- Add validated forecasting models and forecast uncertainty intervals
