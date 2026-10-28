@@ -1,12 +1,24 @@
 from datetime import date
+
 import pandas as pd
 import yfinance as yf
 
 # S&P 500 + sector ETFs (add/remove as needed)
 TICKERS = [
-    "^GSPC", "XLY", "XLP", "XLE", "XLF",
-    "XLV", "XLI", "XLB", "XLK", "XLU", "XLRE", "XLC"
+    "^GSPC",
+    "XLY",
+    "XLP",
+    "XLE",
+    "XLF",
+    "XLV",
+    "XLI",
+    "XLB",
+    "XLK",
+    "XLU",
+    "XLRE",
+    "XLC",
 ]
+
 
 def main():
     print(f"Fetching {len(TICKERS)} tickers...")
@@ -44,6 +56,7 @@ def main():
 
     df.to_csv("equities_monthly.csv", index=False)
     print("Saved equities_monthly.csv")
+
 
 if __name__ == "__main__":
     main()

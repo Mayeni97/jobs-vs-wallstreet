@@ -45,6 +45,36 @@ jobs-vs-wallstreet/
 - **GitHub Actions** (CI/CD + scheduled jobs)
 - **Streamlit Cloud** (dashboard hosting)
 
+## Supabase setup
+
+The project uses Supabase as its PostgreSQL database. Create a Supabase project,
+open the SQL Editor, and run [`supabase/schema.sql`](supabase/schema.sql).
+
+Copy the Supabase PostgreSQL connection string from **Project Settings → Database**.
+Use the pooled connection string when deploying the dashboard, and save it as
+`DATABASE_URL`.
+
+For local runs, create a `.env` file in the repository root:
+
+```env
+DATABASE_URL=postgresql://postgres.<project-ref>:<password>@<pooler-host>:6543/postgres?sslmode=require
+```
+
+Then load the generated CSV files into Supabase with:
+
+```bash
+python etl/load_to_db.py
+```
+
+For Streamlit Cloud, add the same value under **App settings → Secrets** as:
+
+```toml
+DATABASE_URL = "postgresql://..."
+```
+
+For GitHub Actions, add a repository secret named `DATABASE_URL` so the ETL
+workflows can refresh Supabase.
+
 ---
 
 ## Dashboard (Planned)
@@ -58,4 +88,4 @@ jobs-vs-wallstreet/
 ## Future Improvements
 - Add **state-level unemployment (LAUS)** for geo maps  
 - Add **sentiment analysis** from financial news headlines  
-- Add **forecasting models** (ARIMA, Prophet, ML) for unemployment trends  
+- Add **forecasting models** (ARIMA, Prophet, ML) for unemployment trends

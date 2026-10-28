@@ -1,6 +1,12 @@
 import os
+
 import pandas as pd
-from common import get_engine, assert_connect, upsert
+
+try:
+    from .common import assert_connect, get_engine, upsert
+except ImportError:  # Support running this file directly from the repo root.
+    from common import assert_connect, get_engine, upsert
+
 
 def load_equities(engine):
     path = "equities_monthly.csv"
@@ -13,6 +19,7 @@ def load_equities(engine):
     df["monthly_return"] = pd.to_numeric(df["monthly_return"], errors="coerce")
     df = df.dropna(subset=["adj_close"])
     upsert(engine, "equities_monthly", df, ["period_date", "ticker"])
+
 
 def load_unemployment(engine):
     path = "bls_unemployment.csv"
@@ -27,6 +34,7 @@ def load_unemployment(engine):
     df = df.dropna(subset=["unemployment_rate"])
     upsert(engine, "unemployment_headline", df, ["period_date"])
 
+
 def load_ces(engine):
     path = "bls_ces_supersectors.csv"
     if not os.path.exists(path):
@@ -34,9 +42,12 @@ def load_ces(engine):
         return
     df = pd.read_csv(path, parse_dates=["period_date"])
     df = df[["period_date", "sector_code", "sector_name", "employment_thousands"]]
-    df["employment_thousands"] = pd.to_numeric(df["employment_thousands"], errors="coerce")
+    df["employment_thousands"] = pd.to_numeric(
+        df["employment_thousands"], errors="coerce"
+    )
     df = df.dropna(subset=["employment_thousands"])
     upsert(engine, "employment_sector", df, ["period_date", "sector_code"])
+
 
 def main():
     engine = get_engine()
@@ -45,6 +56,7 @@ def main():
     load_unemployment(engine)
     load_ces(engine)
     print("Done")
+
 
 if __name__ == "__main__":
     main()
