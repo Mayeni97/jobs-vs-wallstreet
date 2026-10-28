@@ -72,8 +72,20 @@ For Streamlit Cloud, add the same value under **App settings → Secrets** as:
 DATABASE_URL = "postgresql://..."
 ```
 
-For GitHub Actions, add a repository secret named `DATABASE_URL` so the ETL
-workflows can refresh Supabase.
+For GitHub Actions, add these repository secrets so the ETL workflows can
+refresh Supabase:
+
+```text
+PGHOST
+PGPORT
+PGDATABASE
+PGUSER
+PGPASSWORD
+```
+
+`BLS_API_KEY` is optional, but recommended for larger historical BLS requests.
+The workflows use the `PG*` secrets directly; `DATABASE_URL` is not required
+for GitHub Actions.
 
 ## Deploy the dashboard
 
@@ -86,6 +98,8 @@ DATABASE_URL = "postgresql://..."
 ```
 
 4. Deploy the app. Future pushes to `master` will trigger a redeploy.
+
+Streamlit Cloud can also use the five `PG*` secrets instead of `DATABASE_URL`.
 
 ---
 
