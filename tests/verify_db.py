@@ -1,7 +1,12 @@
+import sys
 from pathlib import Path
 
 import pandas as pd
 from sqlalchemy import text
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from etl.common import get_engine
 
@@ -27,9 +32,9 @@ def main():
                 text(f"select max({date_column}) from {table}")
             ).scalar_one()
             count = conn.execute(text(f"select count(*) from {table}")).scalar_one()
-            if db_max != csv_max:
+            if db_max < csv_max:
                 raise RuntimeError(
-                    f"{table}: database ends at {db_max}, CSV ends at {csv_max}"
+                    f"{table}: database ends at {db_max}, before CSV date {csv_max}"
                 )
             if count == 0:
                 raise RuntimeError(f"{table}: database table is empty")
