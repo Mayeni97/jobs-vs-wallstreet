@@ -35,27 +35,31 @@ def main():
     start_year = int(sys.argv[1]) if len(sys.argv) >= 2 else DEFAULT_START
     end_year = int(sys.argv[2]) if len(sys.argv) >= 3 else dt.date.today().year
 
-    print(f"Fetching BLS CES supersectors {start_year} → {end_year} ...")
-    series = bls_fetch(
-        list(CES_SUPERSECTORS.keys()), start_year=start_year, end_year=end_year
-    )
     recs = []
-    for s in series:
-        code = s["seriesID"]
-        name = CES_SUPERSECTORS.get(code, code)
-        for item in s["data"]:
-            y = int(item["year"])
-            m = int(item["period"][1:])
-            recs.append(
-                {
-                    "period_date": dt.date(y, m, 1),
-                    "sector_code": code,
-                    "sector_name": name,
-                    "employment_thousands": pd.to_numeric(
-                        item["value"], errors="coerce"
-                    ),
-                }
-            )
+    for window_start in range(start_year, end_year + 1, 10):
+        window_end = min(window_start + 9, end_year)
+        print(f"Fetching BLS CES supersectors {window_start} → {window_end} ...")
+        series = bls_fetch(
+            list(CES_SUPERSECTORS.keys()),
+            start_year=window_start,
+            end_year=window_end,
+        )
+        for s in series:
+            code = s["seriesID"]
+            name = CES_SUPERSECTORS.get(code, code)
+            for item in s["data"]:
+                y = int(item["year"])
+                m = int(item["period"][1:])
+                recs.append(
+                    {
+                        "period_date": dt.date(y, m, 1),
+                        "sector_code": code,
+                        "sector_name": name,
+                        "employment_thousands": pd.to_numeric(
+                            item["value"], errors="coerce"
+                        ),
+                    }
+                )
     df = (
         pd.DataFrame(recs)
         .dropna()

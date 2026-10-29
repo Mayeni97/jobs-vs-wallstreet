@@ -19,19 +19,25 @@ def main():
     start_year = int(sys.argv[1]) if len(sys.argv) >= 2 else DEFAULT_START
     end_year = int(sys.argv[2]) if len(sys.argv) >= 3 else dt.date.today().year
 
-    print(f"Fetching BLS headline unemployment {start_year} → {end_year} ...")
-    series = bls_fetch(HEADLINE_SERIES, start_year=start_year, end_year=end_year)
     rows = []
-    for s in series:
-        for item in s["data"]:
-            y = int(item["year"])
-            m = int(item["period"][1:])
-            rows.append(
-                {
-                    "period_date": dt.date(y, m, 1),
-                    "unemployment_rate": pd.to_numeric(item["value"], errors="coerce"),
-                }
-            )
+    for window_start in range(start_year, end_year + 1, 10):
+        window_end = min(window_start + 9, end_year)
+        print(f"Fetching BLS headline unemployment {window_start} → {window_end} ...")
+        series = bls_fetch(
+            HEADLINE_SERIES, start_year=window_start, end_year=window_end
+        )
+        for s in series:
+            for item in s["data"]:
+                y = int(item["year"])
+                m = int(item["period"][1:])
+                rows.append(
+                    {
+                        "period_date": dt.date(y, m, 1),
+                        "unemployment_rate": pd.to_numeric(
+                            item["value"], errors="coerce"
+                        ),
+                    }
+                )
     df = (
         pd.DataFrame(rows)
         .dropna()
