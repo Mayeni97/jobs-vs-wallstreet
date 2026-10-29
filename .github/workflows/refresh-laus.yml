@@ -1,0 +1,41 @@
+name: refresh-state-unemployment
+
+on:
+  schedule:
+    - cron: "0 14 * * 3" # Wednesday at 14:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 30
+    env:
+      PGHOST: ${{ secrets.PGHOST }}
+      PGPORT: ${{ secrets.PGPORT }}
+      PGDATABASE: ${{ secrets.PGDATABASE }}
+      PGUSER: ${{ secrets.PGUSER }}
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+      BLS_START_YEAR: "2000"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python etl/laus_ingest.py
+      - run: python etl/load_to_db.py
+      - run: python tests/verify_db.py
+      - name: Commit refreshed snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add *.csv
+          if git diff --cached --quiet; then echo "No CSV changes"; else git commit -m "Refresh state unemployment snapshot"; git push; fi

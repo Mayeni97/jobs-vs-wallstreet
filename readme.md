@@ -46,7 +46,7 @@ etl/load_to_db.py             CSV-to-Supabase loader
 supabase/schema.sql           Database tables and indexes
 tests/test.py                 Data integrity checks
 .github/workflows/ci.yml      Lint, format, import, and data checks
-.github/workflows/refresh.yml Scheduled production refresh
+.github/workflows/refresh-*.yml Staggered production refreshes
 ```
 
 ## Supabase setup
@@ -83,10 +83,16 @@ Open `http://localhost:8501`.
 
 ## Automated refresh
 
-The `refresh` workflow runs daily at 14:00 UTC, after the typical BLS release
-window. It fetches national unemployment, industry employment, state unemployment,
-and stock data, loads Supabase, and runs data validation. GitHub Actions prevents
-overlapping refreshes.
+The refreshes are deliberately staggered to reduce provider rate-limit pressure:
+
+- Stocks: daily at 14:00 UTC.
+- National unemployment: Mondays at 14:00 UTC.
+- Industry employment: Tuesdays at 14:00 UTC.
+- State unemployment (LAUS): Wednesdays at 14:00 UTC.
+
+Each workflow fetches one source, loads Supabase, verifies that the database's
+latest date matches the generated CSV, and commits the refreshed snapshot. GitHub
+Actions prevents overlapping refreshes. Each workflow can also be run manually.
 
 Add these repository secrets for GitHub Actions:
 
