@@ -7,11 +7,7 @@ jobs:
   etl:
     runs-on: ubuntu-latest
     env:
-      PGHOST:     ${{ secrets.PGHOST }}
-      PGPORT:     ${{ secrets.PGPORT }}
-      PGDATABASE: ${{ secrets.PGDATABASE }}
-      PGUSER:     ${{ secrets.PGUSER }}
-      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
 
     steps:

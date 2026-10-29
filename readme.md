@@ -57,7 +57,7 @@ tests/test.py                 Data integrity checks
    `postgresql://`, not the Supabase project URL beginning with `https://`.
 
 For local development, copy [`.env.example`](.env.example) to `.env` and fill in
-either `DATABASE_URL` or all five `PG*` values. Never commit `.env`.
+`DATABASE_URL`. Never commit `.env`.
 
 Load the generated CSV snapshots into Supabase with:
 
@@ -94,14 +94,10 @@ Each workflow fetches one source, loads Supabase, verifies that the database's
 latest date matches the generated CSV, and commits the refreshed snapshot. GitHub
 Actions prevents overlapping refreshes. Each workflow can also be run manually.
 
-Add these repository secrets for GitHub Actions:
+Add one repository secret for GitHub Actions:
 
 ```text
-PGHOST
-PGPORT
-PGDATABASE
-PGUSER
-PGPASSWORD
+DATABASE_URL
 ```
 
 `BLS_API_KEY` is optional but recommended for larger historical BLS requests.
@@ -111,7 +107,7 @@ The workflow also supports manual runs from the GitHub Actions page.
 
 1. Create an app from this GitHub repository.
 2. Set the main file to `dashboard/app.py`.
-3. Add `DATABASE_URL` or the five `PG*` values under Streamlit app secrets.
+3. Add `DATABASE_URL` under Streamlit app secrets.
 4. Deploy. Future pushes to `master` will trigger redeployment.
 
 ## Quality checks
