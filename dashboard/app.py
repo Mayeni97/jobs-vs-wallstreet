@@ -194,6 +194,8 @@ TICKER_LABELS = {
     "XLC": "Communication Services",
 }
 
+SPX_LABEL = TICKER_LABELS.get(SPX, "S&P 500 Index")
+
 # ---------------- Sidebar ----------------
 with st.sidebar:
     st.header("Controls")
@@ -441,15 +443,17 @@ if ok_u and ok_e:
                 go.Scatter(
                     x=df_a["ym"],
                     y=df_a["spx_indexed"],
-                    name=f"{SPX} indexed",
+                    name=f"{SPX_LABEL} (indexed)",
                     line={"color": "#1f77b4"},
                 ),
                 secondary_y=True,
             )
-            fig.update_layout(title=f"Unemployment vs {SPX} ({start} → {end})")
+            fig.update_layout(title=f"Unemployment vs {SPX_LABEL} ({start} → {end})")
             fig.update_xaxes(title_text="Month")
             fig.update_yaxes(title_text="Unemployment rate (%)", secondary_y=False)
-            fig.update_yaxes(title_text=f"{SPX} (indexed to 100)", secondary_y=True)
+            fig.update_yaxes(
+                title_text=f"{SPX_LABEL} (indexed to 100)", secondary_y=True
+            )
             fig.update_layout(
                 height=430, hovermode="x unified", margin={"t": 60, "b": 20}
             )
