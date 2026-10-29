@@ -13,7 +13,7 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     timeout-minutes: 30
     env:
       PGHOST:     ${{ secrets.PGHOST }}
@@ -55,3 +55,15 @@ jobs:
 
       - name: Validate refreshed data
         run: python tests/test.py
+
+      - name: Commit refreshed CSV snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add *.csv
+          if git diff --cached --quiet; then
+            echo "No CSV changes to commit"
+          else
+            git commit -m "Refresh data snapshots"
+            git push
+          fi

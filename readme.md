@@ -66,6 +66,9 @@ python etl/load_to_db.py
 ```
 
 The loader is safe to run repeatedly because it upserts by each table's primary key.
+The generated CSV snapshots are also refreshed and committed to GitHub after each
+successful scheduled run, so the repository keeps a visible copy of the latest
+loaded data.
 
 ## Run locally
 
