@@ -33,6 +33,9 @@ THEME_STYLES = {
 theme_background, theme_secondary, theme_text, theme_muted, PLOTLY_TEMPLATE = (
     THEME_STYLES[appearance]
 )
+metric_label = "#d1d5db" if appearance == "Dark mode" else "#374151"
+metric_value = "#f8fafc" if appearance == "Dark mode" else "#172033"
+metric_delta = "#86efac" if appearance == "Dark mode" else "#166534"
 theme_css = """
     <style>
         .stApp, [data-testid="stAppViewContainer"] { background: __BG__; color: __TEXT__; }
@@ -46,6 +49,9 @@ theme_css = """
             padding: 16px 18px;
         }
         [data-testid="stMetricValue"] { font-variant-numeric: tabular-nums; }
+        [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] p { color: __METRIC_LABEL__ !important; }
+        [data-testid="stMetricValue"], [data-testid="stMetricValue"] div { color: __METRIC_VALUE__ !important; }
+        [data-testid="stMetricDelta"], [data-testid="stMetricDelta"] div { color: __METRIC_DELTA__ !important; }
         [data-testid="stSidebarContent"] { padding-top: 2rem; }
         h1 { letter-spacing: -0.03em; color: __TEXT__; }
         __READER__
@@ -56,6 +62,9 @@ theme_css = (
     .replace("__TEXT__", theme_text)
     .replace("__SECONDARY__", theme_secondary)
     .replace("__MUTED__", theme_muted)
+    .replace("__METRIC_LABEL__", metric_label)
+    .replace("__METRIC_VALUE__", metric_value)
+    .replace("__METRIC_DELTA__", metric_delta)
     .replace(
         "__READER__",
         (
