@@ -22,20 +22,51 @@ from etl.common import get_engine as get_database_engine
 
 # ---------------- Setup ----------------
 st.set_page_config(page_title="Jobs vs Wall Street", layout="wide")
-st.markdown(
-    """
+appearance = st.sidebar.selectbox(
+    "Appearance", ["Dark mode", "Light mode", "Reader mode"]
+)
+THEME_STYLES = {
+    "Dark mode": ("#0b0f14", "#111827", "#e5e7eb", "#aab4c3", "plotly_dark"),
+    "Light mode": ("#f8fafc", "#ffffff", "#172033", "#526071", "plotly_white"),
+    "Reader mode": ("#f4efe3", "#fffaf0", "#332c24", "#6c5f50", "plotly_white"),
+}
+theme_background, theme_secondary, theme_text, theme_muted, PLOTLY_TEMPLATE = (
+    THEME_STYLES[appearance]
+)
+theme_css = """
     <style>
+        .stApp, [data-testid="stAppViewContainer"] { background: __BG__; color: __TEXT__; }
+        [data-testid="stHeader"] { background: transparent; }
+        [data-testid="stSidebar"] { background: __SECONDARY__; }
+        [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li, [data-testid="stCaptionContainer"] { color: __MUTED__; }
         [data-testid="stMetric"] {
             background: linear-gradient(135deg, rgba(31, 119, 180, 0.10), rgba(148, 103, 189, 0.08));
-            border: 1px solid rgba(127, 127, 127, 0.18);
+            border: 1px solid rgba(127, 127, 127, 0.28);
             border-radius: 14px;
             padding: 16px 18px;
         }
         [data-testid="stMetricValue"] { font-variant-numeric: tabular-nums; }
         [data-testid="stSidebarContent"] { padding-top: 2rem; }
-        h1 { letter-spacing: -0.03em; }
+        h1 { letter-spacing: -0.03em; color: __TEXT__; }
+        __READER__
     </style>
-""",
+"""
+theme_css = (
+    theme_css.replace("__BG__", theme_background)
+    .replace("__TEXT__", theme_text)
+    .replace("__SECONDARY__", theme_secondary)
+    .replace("__MUTED__", theme_muted)
+    .replace(
+        "__READER__",
+        (
+            "body, .stApp { font-size: 1.06rem; line-height: 1.65; }"
+            if appearance == "Reader mode"
+            else ""
+        ),
+    )
+)
+st.markdown(
+    theme_css,
     unsafe_allow_html=True,
 )
 
@@ -455,7 +486,10 @@ if ok_u and ok_e:
                 title_text=f"{SPX_LABEL} (indexed to 100)", secondary_y=True
             )
             fig.update_layout(
-                height=430, hovermode="x unified", margin={"t": 60, "b": 20}
+                template=PLOTLY_TEMPLATE,
+                height=430,
+                hovermode="x unified",
+                margin={"t": 60, "b": 20},
             )
             col1.plotly_chart(fig, width="stretch")
         else:
@@ -498,7 +532,10 @@ if ok_s and ok_e:
                 title_text=f"{sector_etf} (indexed to 100)", secondary_y=True
             )
             fig2.update_layout(
-                height=430, hovermode="x unified", margin={"t": 60, "b": 20}
+                template=PLOTLY_TEMPLATE,
+                height=430,
+                hovermode="x unified",
+                margin={"t": 60, "b": 20},
             )
             col2.plotly_chart(fig2, width="stretch")
         else:
@@ -556,6 +593,7 @@ if ok_states:
         hover_data={"state_code": False, "unemployment_rate": ":.1f"},
         labels={"unemployment_rate": "Unemployment rate (%)"},
         title=f"State unemployment — {selected_month:%B %Y}",
+        template=PLOTLY_TEMPLATE,
     )
     state_map.update_layout(height=470, margin={"t": 60, "b": 0})
     st.plotly_chart(state_map, width="stretch")
@@ -569,6 +607,7 @@ if ok_states:
         markers=True,
         labels={"ym": "Month", "unemployment_rate": "Unemployment rate (%)"},
         title=f"{state_labels[selected_state]} unemployment trend",
+        template=PLOTLY_TEMPLATE,
     )
     state_trend.update_layout(height=330, hovermode="x unified")
     st.plotly_chart(state_trend, width="stretch")
@@ -613,6 +652,7 @@ if not forecast.empty:
         color_discrete_map={"Observed": "#1f77b4", "Trend projection": "#ff7f0e"},
         labels={"ym": "Month", "unemployment_rate": "Unemployment rate (%)"},
         title="National unemployment: observed history and 12-month trend projection",
+        template=PLOTLY_TEMPLATE,
     )
     forecast_chart.update_layout(height=420, hovermode="x unified")
     st.plotly_chart(forecast_chart, width="stretch")
