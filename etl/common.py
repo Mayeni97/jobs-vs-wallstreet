@@ -64,6 +64,12 @@ def get_engine():
                 "Supabase project URL. Copy the URI from Supabase Project "
                 "Settings > Database > Connection string."
             )
+        # Supabase commonly provides a driver-neutral PostgreSQL URI. Pin it
+        # to the psycopg2 driver included in requirements.txt.
+        if url.startswith("postgresql://"):
+            url = "postgresql+psycopg2://" + url.removeprefix("postgresql://")
+        elif url.startswith("postgresql+psycopg://"):
+            url = "postgresql+psycopg2://" + url.removeprefix("postgresql+psycopg://")
         # ensure sslmode=require
         if "sslmode=" not in url:
             url += ("&" if "?" in url else "?") + "sslmode=require"
