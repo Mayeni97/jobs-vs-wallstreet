@@ -33,6 +33,18 @@ def bls_fetch(series_ids, start_year=2000, end_year=None, timeout=60):
     )
     r.raise_for_status()
     j = r.json()
+    if j.get("status") != "REQUEST_SUCCEEDED" and BLS_API_KEY:
+        # A key is optional for the chunked requests used by this project. If
+        # an old, mistyped, or rate-limited secret is present, retry
+        # anonymously instead of failing the entire refresh.
+        payload.pop("registrationkey", None)
+        r = requests.post(
+            "https://api.bls.gov/publicAPI/v2/timeseries/data/",
+            json=payload,
+            timeout=timeout,
+        )
+        r.raise_for_status()
+        j = r.json()
     if j.get("status") != "REQUEST_SUCCEEDED":
         raise RuntimeError(f"BLS API error: {j}")
     return j["Results"]["series"]
