@@ -318,8 +318,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES2000000001,Construction,8316.0
 2026-06-01,CES2000000001,Construction,8319.0
 2026-07-01,CES2000000001,Construction,8337.0
-2026-08-01,CES2000000001,Construction,8353.0
-2026-09-01,CES2000000001,Construction,8364.0
+2026-08-01,CES2000000001,Construction,8354.0
+2026-09-01,CES2000000001,Construction,8370.0
+2026-10-01,CES2000000001,Construction,8367.0
 2000-01-01,CES7000000001,Education and Health Services,11713.0
 2000-02-01,CES7000000001,Education and Health Services,11719.0
 2000-03-01,CES7000000001,Education and Health Services,11788.0
@@ -639,8 +640,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES7000000001,Education and Health Services,17014.0
 2026-06-01,CES7000000001,Education and Health Services,16960.0
 2026-07-01,CES7000000001,Education and Health Services,16922.0
-2026-08-01,CES7000000001,Education and Health Services,16959.0
-2026-09-01,CES7000000001,Education and Health Services,16969.0
+2026-08-01,CES7000000001,Education and Health Services,16964.0
+2026-09-01,CES7000000001,Education and Health Services,16977.0
+2026-10-01,CES7000000001,Education and Health Services,16964.0
 2000-01-01,CES5500000001,Financial Activities,7769.0
 2000-02-01,CES5500000001,Financial Activities,7771.0
 2000-03-01,CES5500000001,Financial Activities,7767.0
@@ -960,8 +962,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES5500000001,Financial Activities,9106.0
 2026-06-01,CES5500000001,Financial Activities,9108.0
 2026-07-01,CES5500000001,Financial Activities,9098.0
-2026-08-01,CES5500000001,Financial Activities,9089.0
-2026-09-01,CES5500000001,Financial Activities,9082.0
+2026-08-01,CES5500000001,Financial Activities,9092.0
+2026-09-01,CES5500000001,Financial Activities,9078.0
+2026-10-01,CES5500000001,Financial Activities,9085.0
 2000-01-01,CES9000000001,Government,20571.0
 2000-02-01,CES9000000001,Government,20599.0
 2000-03-01,CES9000000001,Government,20733.0
@@ -1282,7 +1285,8 @@ period_date,sector_code,sector_name,employment_thousands
 2026-06-01,CES9000000001,Government,23338.0
 2026-07-01,CES9000000001,Government,23300.0
 2026-08-01,CES9000000001,Government,23344.0
-2026-09-01,CES9000000001,Government,23327.0
+2026-09-01,CES9000000001,Government,23326.0
+2026-10-01,CES9000000001,Government,23332.0
 2000-01-01,CES5000000001,Information,3552.0
 2000-02-01,CES5000000001,Information,3570.0
 2000-03-01,CES5000000001,Information,3591.0
@@ -1602,8 +1606,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES5000000001,Information,2782.0
 2026-06-01,CES5000000001,Information,2763.0
 2026-07-01,CES5000000001,Information,2767.0
-2026-08-01,CES5000000001,Information,2749.0
-2026-09-01,CES5000000001,Information,2739.0
+2026-08-01,CES5000000001,Information,2746.0
+2026-09-01,CES5000000001,Information,2735.0
+2026-10-01,CES5000000001,Information,2734.0
 2000-01-01,CES3000000001,Manufacturing,17284.0
 2000-02-01,CES3000000001,Manufacturing,17284.0
 2000-03-01,CES3000000001,Manufacturing,17302.0
@@ -1923,8 +1928,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES3000000001,Manufacturing,12595.0
 2026-06-01,CES3000000001,Manufacturing,12608.0
 2026-07-01,CES3000000001,Manufacturing,12628.0
-2026-08-01,CES3000000001,Manufacturing,12643.0
-2026-09-01,CES3000000001,Manufacturing,12652.0
+2026-08-01,CES3000000001,Manufacturing,12649.0
+2026-09-01,CES3000000001,Manufacturing,12662.0
+2026-10-01,CES3000000001,Manufacturing,12681.0
 2000-01-01,CES1000000001,Mining and Logging,593.0
 2000-02-01,CES1000000001,Mining and Logging,594.0
 2000-03-01,CES1000000001,Mining and Logging,593.0
@@ -2244,8 +2250,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES1000000001,Mining and Logging,611.0
 2026-06-01,CES1000000001,Mining and Logging,609.0
 2026-07-01,CES1000000001,Mining and Logging,606.0
-2026-08-01,CES1000000001,Mining and Logging,609.0
-2026-09-01,CES1000000001,Mining and Logging,607.0
+2026-08-01,CES1000000001,Mining and Logging,608.0
+2026-09-01,CES1000000001,Mining and Logging,606.0
+2026-10-01,CES1000000001,Mining and Logging,605.0
 2000-01-01,CES8000000001,Other Services,5146.0
 2000-02-01,CES8000000001,Other Services,5153.0
 2000-03-01,CES8000000001,Other Services,5161.0
@@ -2565,8 +2572,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES8000000001,Other Services,6031.0
 2026-06-01,CES8000000001,Other Services,6024.0
 2026-07-01,CES8000000001,Other Services,6030.0
-2026-08-01,CES8000000001,Other Services,6033.0
+2026-08-01,CES8000000001,Other Services,6034.0
 2026-09-01,CES8000000001,Other Services,6039.0
+2026-10-01,CES8000000001,Other Services,6045.0
 2000-01-01,CES6000000001,Professional and Business Services,16488.0
 2000-02-01,CES6000000001,Professional and Business Services,16525.0
 2000-03-01,CES6000000001,Professional and Business Services,16599.0
@@ -2886,8 +2894,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES6000000001,Professional and Business Services,22466.0
 2026-06-01,CES6000000001,Professional and Business Services,22502.0
 2026-07-01,CES6000000001,Professional and Business Services,22496.0
-2026-08-01,CES6000000001,Professional and Business Services,22491.0
-2026-09-01,CES6000000001,Professional and Business Services,22482.0
+2026-08-01,CES6000000001,Professional and Business Services,22526.0
+2026-09-01,CES6000000001,Professional and Business Services,22534.0
+2026-10-01,CES6000000001,Professional and Business Services,22604.0
 2000-01-01,CES4300000001,Retail Trade,4363.7
 2000-02-01,CES4300000001,Retail Trade,4372.8
 2000-03-01,CES4300000001,Retail Trade,4381.3
@@ -3207,8 +3216,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES4300000001,Retail Trade,6597.8
 2026-06-01,CES4300000001,Retail Trade,6587.5
 2026-07-01,CES4300000001,Retail Trade,6597.8
-2026-08-01,CES4300000001,Retail Trade,6601.1
-2026-09-01,CES4300000001,Retail Trade,6608.7
+2026-08-01,CES4300000001,Retail Trade,6603.9
+2026-09-01,CES4300000001,Retail Trade,6611.3
+2026-10-01,CES4300000001,Retail Trade,6636.1
 2000-01-01,CES0500000001,Total Private,110440.0
 2000-02-01,CES0500000001,Total Private,110521.0
 2000-03-01,CES0500000001,Total Private,110871.0
@@ -3528,8 +3538,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES0500000001,Total Private,135528.0
 2026-06-01,CES0500000001,Total Private,135554.0
 2026-07-01,CES0500000001,Total Private,135582.0
-2026-08-01,CES0500000001,Total Private,135671.0
-2026-09-01,CES0500000001,Total Private,135717.0
+2026-08-01,CES0500000001,Total Private,135724.0
+2026-09-01,CES0500000001,Total Private,135802.0
+2026-10-01,CES0500000001,Total Private,135961.0
 2000-01-01,CES4000000001,"Trade, Transportation, and Utilities",26043.0
 2000-02-01,CES4000000001,"Trade, Transportation, and Utilities",26061.0
 2000-03-01,CES4000000001,"Trade, Transportation, and Utilities",26118.0
@@ -3849,8 +3860,9 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES4000000001,"Trade, Transportation, and Utilities",28724.0
 2026-06-01,CES4000000001,"Trade, Transportation, and Utilities",28728.0
 2026-07-01,CES4000000001,"Trade, Transportation, and Utilities",28751.0
-2026-08-01,CES4000000001,"Trade, Transportation, and Utilities",28760.0
-2026-09-01,CES4000000001,"Trade, Transportation, and Utilities",28778.0
+2026-08-01,CES4000000001,"Trade, Transportation, and Utilities",28767.0
+2026-09-01,CES4000000001,"Trade, Transportation, and Utilities",28796.0
+2026-10-01,CES4000000001,"Trade, Transportation, and Utilities",28818.0
 2000-01-01,CES4200000001,Wholesale Trade,15165.2
 2000-02-01,CES4200000001,Wholesale Trade,15174.1
 2000-03-01,CES4200000001,Wholesale Trade,15208.0
@@ -4170,5 +4182,6 @@ period_date,sector_code,sector_name,employment_thousands
 2026-05-01,CES4200000001,Wholesale Trade,15464.0
 2026-06-01,CES4200000001,Wholesale Trade,15473.6
 2026-07-01,CES4200000001,Wholesale Trade,15479.2
-2026-08-01,CES4200000001,Wholesale Trade,15474.1
-2026-09-01,CES4200000001,Wholesale Trade,15479.9
+2026-08-01,CES4200000001,Wholesale Trade,15482.6
+2026-09-01,CES4200000001,Wholesale Trade,15495.3
+2026-10-01,CES4200000001,Wholesale Trade,15501.3
